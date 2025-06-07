@@ -56,7 +56,7 @@ Open VS Code settings and search for "debugpy" to configure:
 | Setting | Default | Description |
 |---------|---------|-------------|
 | `debugpyAttacher.enableLiveMonitoring` | `true` | Enable background monitoring of debugpy processes |
-| `debugpyAttacher.autoAttach` | `false` | (Beta) Automatically attach to new debugpy processes |
+| `debugpyAttacher.autoAttach` | `true` | Automatically attach to new debugpy processes |
 | `debugpyAttacher.showRulerDecorations` | `true` | Show visual indicators in the overview ruler |
 | `debugpyAttacher.defaultPort` | `5678` | Default port for keyboard shortcut |
 
