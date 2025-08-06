@@ -2,7 +2,7 @@
   "name": "debugpy-attacher",
   "displayName": "DebugPy Attacher",
   "description": "Automatically detect and attach to debugpy processes",
-  "version": "1.1.1",
+  "version": "1.2.0",
   "publisher": "DebugPyAttacher",
   "license": "MIT",
   "icon": "icon.png",
@@ -59,6 +59,10 @@
       {
         "command": "debugpy.insertAttachCodeWithBreakpoint",
         "title": "Debugpy: Insert Attach Code with Breakpoint"
+      },
+      {
+        "command": "debugpy.toggleHideProcessesFromOtherUsers",
+        "title": "Debugpy: Toggle Hiding Processes from Other Users"
       }
     ],
     "keybindings": [
@@ -99,6 +103,11 @@
           "minimum": 1024,
           "maximum": 65535,
           "description": "Default port number used in debugpy attach code snippets"
+        },
+        "debugpyAttacher.hideProcessesFromOtherUsers": {
+          "type": "boolean",
+          "default": true,
+          "description": "Hide processes from other users in the status bar and process list"
         }
       }
     },

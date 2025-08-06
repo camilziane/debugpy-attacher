@@ -45,7 +45,12 @@ export class StatusBarManager {
 
   async updateStatusBar(): Promise<void> {
     try {
-      const processes = await this.processService.findPythonProcesses();
+      let processes = await this.processService.findPythonProcesses();
+
+      if (this.config.shouldHideProcessesFromOtherUsers()) {
+        processes = processes.filter(p => p.isCurrentUser);
+      }
+
       const currentPorts = new Set(processes.map((p: PythonProcess) => p.port));
 
       if (processes.length > 0) {
@@ -67,10 +72,10 @@ export class StatusBarManager {
   }
 
   private async handleAutoAttach(processes: PythonProcess[]): Promise<void> {
-    const newPorts = processes.filter((p: PythonProcess) => !this.knownPorts.has(p.port));
+    const newProcesses = processes.filter((p: PythonProcess) => !this.knownPorts.has(p.port));
 
-    for (const process of newPorts) {
-      if (!vscode.debug.activeDebugSession && this.lockManager.tryAcquirePortLock(process.port)) {
+    for (const process of newProcesses) {
+      if (process.isCurrentUser && !vscode.debug.activeDebugSession && this.lockManager.tryAcquirePortLock(process.port)) {
         try {
           await this.attachToDebugger(process, true);
           vscode.window.showInformationMessage(`Auto-attached to debugpy on port ${process.port}`);
@@ -83,10 +88,23 @@ export class StatusBarManager {
     }
   }
 
-  async attachToDebugger(process: PythonProcess, isAutoAttach: boolean = false): Promise<void> {
+    async attachToDebugger(process: PythonProcess, isAutoAttach: boolean = false): Promise<void> {
+    if (!process.isCurrentUser && !isAutoAttach) {
+      const confirmation = await vscode.window.showWarningMessage(
+        `You are trying to attach to a process owned by another user (${process.user}). This may have security implications. Do you want to continue?`,
+        { modal: true },
+        'Yes'
+      );
+
+      if (confirmation !== 'Yes') {
+        vscode.window.showInformationMessage('Attach operation cancelled.');
+        return;
+      }
+    }
+
     try {
       const success = await vscode.debug.startDebugging(undefined, {
-        name: `Attach to ${process.script}`,
+        name: `Attach to Port ${process.port}`,
         type: "python",
         request: "attach",
         connect: {

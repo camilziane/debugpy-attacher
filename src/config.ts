@@ -31,6 +31,18 @@ export class ConfigManager {
     return config.get('showRulerDecorations', true);
   }
 
+  shouldHideProcessesFromOtherUsers(): boolean {
+    const config = vscode.workspace.getConfiguration('debugpyAttacher');
+    return config.get('hideProcessesFromOtherUsers', true);
+  }
+
+  async toggleHideProcessesFromOtherUsers(): Promise<boolean> {
+    const config = vscode.workspace.getConfiguration('debugpyAttacher');
+    const currentValue = this.shouldHideProcessesFromOtherUsers();
+    await config.update('hideProcessesFromOtherUsers', !currentValue, vscode.ConfigurationTarget.Global);
+    return !currentValue;
+  }
+
   async toggleLiveMonitoring(): Promise<boolean> {
     const config = vscode.workspace.getConfiguration('debugpyAttacher');
     const currentValue = config.get('enableLiveMonitoring', true);

@@ -75,7 +75,8 @@ export class PortLockManager {
   }
 
   private getLockDir(): string {
-    return path.join(os.tmpdir(), 'debugpy-attacher-locks');
+    const currentUser = os.userInfo().username || 'unknown-user';
+    return path.join(os.tmpdir(), `debugpy-attacher-locks-${currentUser}`);
   }
 
   private ensureLockDir(): void {

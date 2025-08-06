@@ -60,15 +60,14 @@ function registerCommands(context: vscode.ExtensionContext): void {
     lockManager.markUserActivity();
 
     try {
-      const pythonProcesses = await processService.findPythonProcesses();
+      let pythonProcesses = await processService.findPythonProcesses();
+
+      if (configManager.shouldHideProcessesFromOtherUsers()) {
+        pythonProcesses = pythonProcesses.filter(p => p.isCurrentUser);
+      }
 
       if (pythonProcesses.length === 0) {
         vscode.window.showErrorMessage("No Python processes with listening ports found. Make sure a debugpy process is running.");
-        return;
-      }
-
-      if (pythonProcesses.length === 1) {
-        await handleSingleProcessAttach(pythonProcesses[0]);
         return;
       }
 
@@ -91,6 +90,13 @@ function registerCommands(context: vscode.ExtensionContext): void {
     vscode.window.showInformationMessage(`Debugpy auto-attach ${newState ? 'enabled' : 'disabled'}`);
   });
 
+  const toggleHideProcessesCommand = vscode.commands.registerCommand('debugpy.toggleHideProcessesFromOtherUsers', async () => {
+    lockManager.markUserActivity();
+    const newState = await configManager.toggleHideProcessesFromOtherUsers();
+    vscode.window.showInformationMessage(`Hiding processes from other users is now ${newState ? 'enabled' : 'disabled'}.`);
+    statusBarManager.restartMonitoring();
+  });
+
   const cleanRegionsCommand = vscode.commands.registerCommand('debugpy.cleanAttachRegionsWorkspace', cleanAttachRegionsWorkspace);
 
   const cleanCurrentFileCommand = vscode.commands.registerCommand('debugpy.cleanAttachRegionsCurrentFile', cleanAttachRegionsCurrentFile);
@@ -107,6 +113,7 @@ function registerCommands(context: vscode.ExtensionContext): void {
     attachCommand,
     toggleLiveMonitoringCommand,
     toggleAutoAttachCommand,
+    toggleHideProcessesCommand,
     cleanRegionsCommand,
     cleanCurrentFileCommand,
     insertDebugpyCommand,
@@ -114,33 +121,33 @@ function registerCommands(context: vscode.ExtensionContext): void {
   );
 }
 
-async function handleSingleProcessAttach(process: PythonProcess): Promise<void> {
-  if (!lockManager.tryAcquirePortLock(process.port)) {
-    vscode.window.showWarningMessage(`Port ${process.port} is already being debugged by another window.`);
-    return;
-  }
-
-  try {
-    await statusBarManager.attachToDebugger(process);
-    setTimeout(() => lockManager.releasePortLock(process.port), 1000);
-  } catch (error) {
-    lockManager.releasePortLock(process.port);
-    throw error;
-  }
-}
-
 async function handleMultipleProcessSelection(pythonProcesses: PythonProcess[]): Promise<void> {
   const quickPickItems = pythonProcesses.map((proc: PythonProcess) => ({
-    label: `Port ${proc.port} - ${proc.script}`,
-    description: proc.command.length > 50 ? proc.command.substring(0, 50) + '...' : proc.command,
+    label: `Port ${proc.port}`,
+    description: `User: ${proc.user}${proc.isCurrentUser ? ' (Current User)' : ''}`,
+    detail: `PID: ${proc.pid}`,
     process: proc
   }));
 
   const selected = await vscode.window.showQuickPick(quickPickItems, {
-    placeHolder: "Choose a port to debug"
+    placeHolder: "Choose a port to debug",
+    matchOnDescription: true,
+    matchOnDetail: true,
   });
 
   if (selected) {
+    if (!selected.process.isCurrentUser) {
+      const choice = await vscode.window.showWarningMessage(
+        `You are trying to attach to a process owned by another user (${selected.process.user}). This may have security implications.`,
+        { modal: true },
+        "Attach Anyway"
+      );
+
+      if (choice !== "Attach Anyway") {
+        return;
+      }
+    }
+
     if (!lockManager.tryAcquirePortLock(selected.process.port)) {
       vscode.window.showWarningMessage(`Port ${selected.process.port} is already being debugged by another window.`);
       return;
