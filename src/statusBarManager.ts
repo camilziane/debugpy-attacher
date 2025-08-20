@@ -77,8 +77,10 @@ export class StatusBarManager {
     for (const process of newProcesses) {
       if (process.isCurrentUser && !vscode.debug.activeDebugSession && this.lockManager.tryAcquirePortLock(process.port)) {
         try {
-          await this.attachToDebugger(process, true);
-          vscode.window.showInformationMessage(`Auto-attached to debugpy on port ${process.port}`);
+          const debugConfig = await this.attachToDebugger(process, true);
+          if (debugConfig) {
+            vscode.window.showInformationMessage(`Auto-attached to debugpy on port ${process.port} using '${debugConfig.name}' configuration.`);
+          }
           setTimeout(() => this.lockManager.releasePortLock(process.port), 5000);
         } catch (error) {
           vscode.window.showWarningMessage(`Failed to auto-attach to port ${process.port}: ${error}`);
@@ -88,7 +90,7 @@ export class StatusBarManager {
     }
   }
 
-    async attachToDebugger(process: PythonProcess, isAutoAttach: boolean = false): Promise<void> {
+  async attachToDebugger(process: PythonProcess, isAutoAttach: boolean = false): Promise<vscode.DebugConfiguration | undefined> {
     if (!process.isCurrentUser && !isAutoAttach) {
       const confirmation = await vscode.window.showWarningMessage(
         `You are trying to attach to a process owned by another user (${process.user}). This may have security implications. Do you want to continue?`,
@@ -98,27 +100,51 @@ export class StatusBarManager {
 
       if (confirmation !== 'Yes') {
         vscode.window.showInformationMessage('Attach operation cancelled.');
-        return;
+        return undefined;
       }
     }
 
     try {
-      const success = await vscode.debug.startDebugging(undefined, {
-        name: `Attach to Port ${process.port}`,
-        type: "python",
-        request: "attach",
-        connect: {
-          host: "localhost",
-          port: parseInt(process.port)
-        },
-        justMyCode: false,
-        console: "integratedTerminal"
-      });
+      const workspaceFolder = vscode.workspace.workspaceFolders ? vscode.workspace.workspaceFolders[0] : undefined;
+      const launchConfig = vscode.workspace.getConfiguration('launch', workspaceFolder?.uri);
+      const configurations = launchConfig.get<vscode.DebugConfiguration[]>('configurations');
+
+      let debugConfig: vscode.DebugConfiguration;
+      const defaultConfigFromLaunch = configurations?.find(config => config.name === 'debugpy-attacher-default');
+
+      if (defaultConfigFromLaunch) {
+        debugConfig = {
+          ...defaultConfigFromLaunch,
+          connect: {
+            ...(defaultConfigFromLaunch.connect || {}),
+            port: parseInt(process.port),
+          },
+          name: `debugpy-attacher-default on ${process.port}`,
+        };
+        if (!debugConfig.connect.host) {
+          debugConfig.connect.host = 'localhost';
+        }
+      } else {
+        debugConfig = {
+          name: `Attach to Port ${process.port}`,
+          type: "python",
+          request: "attach",
+          connect: {
+            host: "localhost",
+            port: parseInt(process.port)
+          },
+          justMyCode: false,
+          console: "integratedTerminal"
+        };
+      }
+
+      const success = await vscode.debug.startDebugging(workspaceFolder, debugConfig);
 
       if (success) {
         if (!isAutoAttach) {
-          vscode.window.showInformationMessage(`Debugger attached to port ${process.port}`);
+          vscode.window.showInformationMessage(`Debugger attached to port ${process.port} using '${debugConfig.name}' configuration.`);
         }
+        return debugConfig;
       } else {
         throw new Error('Debug session failed to start');
       }
