@@ -9,7 +9,28 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### ✨ Added
 
-- **Read defaults from launch.json**: The extension will first try to read debug config from `launch.json`. The config name is `debugpy-attacher-default`.
+- **Docker Container Support**: Automatic detection of debugpy processes running inside Docker containers (macOS and Linux only)
+- **Launch.json Integration**:
+  - `Debugpy: Insert Default Launch Configuration` command for easy setup
+  - JSONC-aware parsing with comment preservation
+  - Launch.json snippet support (`debugpy` snippet in launch.json files)
+  - Configurations with `"debugpyAttacher": true` are used as defaults for attachment
+- **Silent Auto-Attach**: Enhanced auto-attach with configurable retry intervals and intelligent error suppression
+- **Enhanced Configuration Options**:
+  - `debugpyAttacher.autoAttachRetryInterval`: Configure retry intervals (500-10000ms, default: 1000ms)
+  - `debugpyAttacher.suppressConnectionErrors`: Suppress connection error notifications during auto-attach
+
+### ♻️ Changed
+
+- **Improved Snippets**: Updated debugpy code snippets to use `0.0.0.0` for better Docker compatibility
+- **Better Error Handling**: Silent retry mechanism with graceful handling of connection failures
+- **Enhanced Process Detection**: Comprehensive process discovery including Docker containers
+
+### 🐛 Fixed
+
+- Fixed multiple "already being debugged" error messages during auto-attach
+- Resolved ECONNREFUSED errors persisting after debug sessions end
+- Fixed launch.json parsing issues with commented configuration files
 
 ## [1.2.0] - 2025-08-06
 
