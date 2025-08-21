@@ -63,6 +63,8 @@ Open VS Code settings and search for "debugpy" to configure:
 | `debugpyAttacher.showRulerDecorations` | `true` | Show visual indicators for attach regions in the overview ruler. |
 | `debugpyAttacher.defaultPort` | `5678` | Default port for the "Insert Attach Code" command. |
 
+You can set default options in `launch.json` with a config named `debugpy-attacher-default`. On attach the port will be overwritten, the other options get reused. This makes it easy to e.g. set `pathMappings`.
+
 ## 🎮 Commands
 
 Access these commands via `Cmd+Shift+P` (Mac) or `Ctrl+Shift+P` (Windows/Linux):
