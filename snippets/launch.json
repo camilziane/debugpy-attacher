@@ -1,0 +1,25 @@
+{
+  "debugpy-attacher-config": {
+    "prefix": "debugpy",
+    "body": [
+      "{",
+      "    \"name\": \"default-debugpy-attacher\",",
+      "    \"type\": \"debugpy\",",
+      "    \"request\": \"attach\",",
+      "    \"connect\": {",
+      "        \"host\": \"localhost\",",
+      "        \"port\": ${1:5678}",
+      "    },",
+      "    \"debugpyAttacher\": true,",
+      "    \"pathMappings\": [",
+      "        {",
+      "            \"localRoot\": \"\\${workspaceFolder}\",",
+      "            \"remoteRoot\": \"\\${workspaceFolder}\"",
+      "        }",
+      "    ],",
+      "    \"justMyCode\": false",
+      "}$0"
+    ],
+    "description": "Insert debugpy-attacher configuration for launch.json"
+  }
+}

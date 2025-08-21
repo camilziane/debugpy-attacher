@@ -6,7 +6,7 @@
     "body": [
       "# region dbpy_attach",
       "import debugpy",
-      "(debugpy.listen(${1:5678}), debugpy.wait_for_client()) if not debugpy.is_client_connected() else None",
+      "(debugpy.listen(('0.0.0.0', ${1:5678})), debugpy.wait_for_client()) if not debugpy.is_client_connected() else None",
       "# endregion",
       "$0"
     ],
@@ -19,7 +19,7 @@
     "body": [
       "# region dbpy_attach (b)",
       "import debugpy",
-      "(debugpy.listen(${1:5678}), debugpy.wait_for_client()) if not debugpy.is_client_connected() else None",
+      "(debugpy.listen(('0.0.0.0', ${1:5678})), debugpy.wait_for_client()) if not debugpy.is_client_connected() else None",
       "debugpy.breakpoint()",
       "# endregion",
       "$0"
