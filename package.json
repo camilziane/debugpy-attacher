@@ -30,6 +30,9 @@
     "onLanguage:python"
   ],
   "main": "./out/extension.js",
+  "extensionKind": [
+    "workspace"
+  ],
   "contributes": {
     "commands": [
       {
@@ -63,6 +66,10 @@
       {
         "command": "debugpy.toggleHideProcessesFromOtherUsers",
         "title": "Debugpy: Toggle Hiding Processes from Other Users"
+      },
+      {
+        "command": "debugpy.insertDefaultLaunchConfig",
+        "title": "Debugpy: Insert Default Launch Configuration"
       }
     ],
     "keybindings": [
@@ -108,6 +115,18 @@
           "type": "boolean",
           "default": true,
           "description": "Hide processes from other users in the status bar and process list"
+        },
+        "debugpyAttacher.autoAttachRetryInterval": {
+          "type": "number",
+          "default": 1000,
+          "minimum": 500,
+          "maximum": 10000,
+          "description": "Auto-attach retry interval in milliseconds (500-10000ms)"
+        },
+        "debugpyAttacher.suppressConnectionErrors": {
+          "type": "boolean",
+          "default": true,
+          "description": "Suppress connection error notifications during auto-attach attempts"
         }
       }
     },
@@ -115,6 +134,10 @@
       {
         "language": "python",
         "path": "./snippets/python.json"
+      },
+      {
+        "language": "jsonc",
+        "path": "./snippets/launch.json"
       }
     ]
   },
@@ -128,8 +151,9 @@
     "test": "vscode-test"
   },
   "devDependencies": {
-    "@types/vscode": "^1.74.0",
+    "@types/mocha": "^10.0.10",
     "@types/node": "16.x",
+    "@types/vscode": "^1.74.0",
     "typescript": "^4.9.4"
   }
 }

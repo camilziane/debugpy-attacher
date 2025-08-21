@@ -5,6 +5,33 @@ All notable changes to the "DebugPy Attacher" extension will be documented in th
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [1.3.0] - unreleased
+
+### ✨ Added
+
+- **Docker Container Support**: Automatic detection of debugpy processes running inside Docker containers (macOS and Linux only)
+- **Launch.json Integration**:
+  - `Debugpy: Insert Default Launch Configuration` command for easy setup
+  - JSONC-aware parsing with comment preservation
+  - Launch.json snippet support (`debugpy` snippet in launch.json files)
+  - Configurations with `"debugpyAttacher": true` are used as defaults for attachment
+- **Silent Auto-Attach**: Enhanced auto-attach with configurable retry intervals and intelligent error suppression
+- **Enhanced Configuration Options**:
+  - `debugpyAttacher.autoAttachRetryInterval`: Configure retry intervals (500-10000ms, default: 1000ms)
+  - `debugpyAttacher.suppressConnectionErrors`: Suppress connection error notifications during auto-attach
+
+### ♻️ Changed
+
+- **Improved Snippets**: Updated debugpy code snippets to use `0.0.0.0` for better Docker compatibility
+- **Better Error Handling**: Silent retry mechanism with graceful handling of connection failures
+- **Enhanced Process Detection**: Comprehensive process discovery including Docker containers
+
+### 🐛 Fixed
+
+- Fixed multiple "already being debugged" error messages during auto-attach
+- Resolved ECONNREFUSED errors persisting after debug sessions end
+- Fixed launch.json parsing issues with commented configuration files
+
 ## [1.2.0] - 2025-08-06
 
 ### ✨ Added
