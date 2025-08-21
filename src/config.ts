@@ -36,6 +36,11 @@ export class ConfigManager {
     return config.get('hideProcessesFromOtherUsers', true);
   }
 
+  getAutoAttachRetryInterval(): number {
+    const config = vscode.workspace.getConfiguration('debugpyAttacher');
+    return config.get('autoAttachRetryInterval', 1000);
+  }
+
   async toggleHideProcessesFromOtherUsers(): Promise<boolean> {
     const config = vscode.workspace.getConfiguration('debugpyAttacher');
     const currentValue = this.shouldHideProcessesFromOtherUsers();
