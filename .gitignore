@@ -14,9 +14,7 @@ ehthumbs.db
 Thumbs.db
 
 # IDE files
-.vscode/settings.json
-.vscode/launch.json
-.vscode/extensions.json
+.vscode/
 .idea/
 
 # Logs
